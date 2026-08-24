@@ -30,7 +30,7 @@ func (z *ZoneController) PermitAirflow(guard interface {
 	Permit(zone model.ZoneID, plenum model.PlenumID) error
 }) error {
 	if !z.enabled {
-		return model.Wrap("zone", "disabled", model.ErrConflict)
+		return model.Wrap("zone", "disabled", model.ErrInterlock)
 	}
 	return guard.Permit(z.zone, z.plenum)
 }
