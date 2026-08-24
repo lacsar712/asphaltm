@@ -18,8 +18,12 @@ func NewHeatWindow(clk Clock, duration time.Duration) *HeatWindow {
 	return &HeatWindow{clk: clk, duration: duration}
 }
 
+// Active reports whether the heat window is still open relative to the
+// injected clock, not the wall clock. The process beat (ProcessClock) can be
+// frozen during a hold/pause; measuring elapsed time against that clock keeps
+// the closure window in step with the process beat instead of the wall clock.
 func (w *HeatWindow) Active(anchor time.Time) bool {
-	return time.Since(anchor) < w.duration
+	return w.clk.Now().Sub(anchor) < w.duration
 }
 
 func (w *HeatWindow) Require(anchor time.Time) error {
