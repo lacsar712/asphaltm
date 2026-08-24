@@ -16,7 +16,12 @@ func (a *App) ExecutePlan(ctx context.Context, plan SegmentPlan) error {
 	if a.scheduler == nil {
 		return nil
 	}
-	return a.scheduler.InstallVentPlanCtx(context.Background(), clock.VentPlan{VentSteps: plan.VentSteps}, "segment-plan")
+	// Propagate the caller's ctx (which carries the mix-screen withdrawal /
+	// cancel receipt) into the scheduling layer. Previously this handed
+	// context.Background() to InstallVentPlanCtx, so a cancellation raised at the
+	// mixing screen never reached the plan layer and the scheduler kept
+	// appending heating/vent steps from the stale plan table.
+	return a.scheduler.InstallVentPlanCtx(ctx, clock.VentPlan{VentSteps: plan.VentSteps}, "segment-plan")
 }
 
 func (a *App) SegmentVentStepsDone() int {
