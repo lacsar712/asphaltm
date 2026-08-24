@@ -9,14 +9,16 @@ import (
 func (a *App) BeginBatchScope(ctx context.Context, tower model.TowerID) (context.Context, context.CancelFunc) {
 	child, cancel := context.WithCancel(ctx)
 	a.batchMu.Lock()
-	if a.activeCancel != nil {
-		a.activeCancel()
+	if prev, ok := a.activeCancel[tower]; ok && prev != nil {
+		prev()
 	}
-	a.activeCancel = cancel
+	a.activeCancel[tower] = cancel
 	a.batchMu.Unlock()
 	release := func() {
 		a.batchMu.Lock()
-		a.activeCancel = nil
+		if cur, ok := a.activeCancel[tower]; ok && cur != nil {
+			delete(a.activeCancel, tower)
+		}
 		a.batchMu.Unlock()
 		cancel()
 	}

@@ -42,7 +42,7 @@ type App struct {
 	avgWindow    *clock.HeatWindow
 	feedLeases   *interlock.FeedLeaseRegistry
 	batchMu       sync.Mutex
-	activeCancel  context.CancelFunc
+	activeCancel  map[model.TowerID]context.CancelFunc
 	dryRamp      *MixRamp
 }
 
@@ -110,6 +110,7 @@ func New(cfg config.Config) (*App, error) {
 	}
 	a.towerFSM = fsm.NewTowerFSM(towerID, a.onTowerTransition)
 	a.feedLeases = interlock.NewFeedLeaseRegistry(a.clk.Now)
+	a.activeCancel = make(map[model.TowerID]context.CancelFunc)
 	if pc, ok := a.clk.(*clock.ProcessClock); ok {
 		a.scheduler = clock.NewSegmentScheduler(*pc)
 		a.avgWindow = clock.NewHeatWindow(a.clk, time.Duration(cfg.HeatWindowMinutes)*time.Minute)
