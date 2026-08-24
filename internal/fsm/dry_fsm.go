@@ -27,9 +27,11 @@ func (f *PlantFSM) State() model.DryState { return f.state }
 func (f *PlantFSM) Dispatch(ctx context.Context, event string) (model.DryState, error) {
 	next, ok := allowedDry(f.state, event)
 	if !ok {
-		if f.hooks != nil {
-			_ = f.hooks.RunAfter(ctx, f.state, f.state, event)
-		}
+		// Bypassed (rejected) transition: state is unchanged, so the
+		// after-hook execution chain must not run. Driving RunAfter here
+		// would fire side effects (e.g. the heater pulse) even though no
+		// transition committed — a standby/idle event could spuriously
+		// raise the binder heat valve opening.
 		return f.state, fmt.Errorf("%s from %s: %w", event, f.state, ErrIllegalDryTransition)
 	}
 	from := f.state
