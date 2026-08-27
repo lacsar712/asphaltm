@@ -1,6 +1,6 @@
 # asphaltm
 
-Asphalt mixing plant binder temperature control.
+asphaltm 是一套沥青搅拌站 binder 温度工业过程控制系统，用于 binder 温度的监测、调节与过程联锁。
 
 ## Requirements
 
